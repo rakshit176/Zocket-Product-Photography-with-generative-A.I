@@ -42,6 +42,6 @@ Results of the prompt is below:
 
 prompt :  Change background to hotel
 
-![Screenshot]([screenshot.png](https://github.com/rakshit176/Zocket-Product-Photography-with-generative-A.I/blob/main/results.png))
+![myimage-alt-tag](https://github.com/rakshit176/Zocket-Product-Photography-with-generative-A.I/blob/main/results.png)
 
 In summary, this script provides an interactive way to select a region in an image, apply a background change using either an API or a custom method, and display the resulting image. It combines several libraries and models for this purpose. To use the script, you would need the required models and API access tokens. Additionally, you might need to install the necessary Python packages. The script is designed for background change tasks and can be useful in creative applications or image editing workflows.
