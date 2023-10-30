@@ -1,5 +1,9 @@
 # Zocket-Product-Photography-with-generative-A.I
 
+Instructions and flow please refer bwlo doc link
+
+[Doc for the run the product pipeline](https://docs.google.com/document/d/1UIt0CoKVBC8GZNI6NjhI45pRJ82lFrrtpRpLLYf2a_Q/edit?usp=sharing)
+
 The code you've provided for a background change generator using the FastSAM model and the Stable Diffusion method. Let's break down the different components of the code and explain its functionality:
 
 1. Import Statements:
