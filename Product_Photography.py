@@ -104,14 +104,13 @@ class BackgroundChangeGenerator:
         return stable_diffusion_output
 
     @staticmethod
-    def generate_background_change_custom(prompt, image, mask, output_path,key,engine="stable-diffusion-xl-1024-v1-0"):
+    def generate_background_change_custom(prompt, image, mask, output_path,key,engine= "stabilityai/stable-diffusion-2-inpainting"):
         os.environ["PYTORCH_CUDA_ALLOC_CONF"] = "max_split_size_mb:512"
         access_token = key
         # Initialize the inpainting pipeline
         pipe = StableDiffusionInpaintPipeline.from_pretrained(
             engine,
-            torch_dtype=torch.float16,
-            use_auth_token=access_token
+            torch_dtype=torch.float16,use_auth_token=access_token
         )
         pipe.to("cuda")
         torch.cuda.empty_cache()
@@ -224,48 +223,54 @@ class BackgroundChangeGenerator:
         BackgroundChangeGenerator.get_concat_h_multi_resize([input_image, annotated_image, mask]).save('./concat.png')
         return input_image,annotated_image,mask
     
+    @staticmethod
+    def main():
+        bg_change_generator = BackgroundChangeGenerator()
+        model = FastSAM('FastSAM-s.pt') 
+        print('Model Loaded !!!!!')
     
+        input_image = None
+        annotated_image = None
+        mask = None
+        
+        parser = argparse.ArgumentParser(description="Select a file from the command line")
+        parser.add_argument("--path", type=str, help="Path to the file you want to use")
+        parser.add_argument('--custom', default=False, action='store_true', help='to utilize custom weights')
+
+        args = parser.parse_args()
+        if args.path:
+            input_image, annotated_image, mask = bg_change_generator.mask_the_region(model, args.path)
+        else:
+            input_image, annotated_image, mask = bg_change_generator.mask_the_region(model, None)
+        
+        prompt = input("Enter the prompt to change the background: ")
+
+        if args.custom:
+            # If you have a GPU with a minimum of 8GB memory, use this function
+            stable_diffusion_output = bg_change_generator.generate_background_change_custom(
+                prompt=prompt,
+                image=input_image,
+                mask=mask,
+                output_path="./out.png",
+                key='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',
+                engine="stabilityai/stable-diffusion-2-inpainting"
+            )
+        else:
+            stable_diffusion_output = bg_change_generator.generate_background_change_api(
+                prompt=prompt,
+                image=input_image,
+                mask=mask,
+                output_path="./out.png",
+                key='sk-y1SMimJTiCmiW7RvHnSYxZGb8zbo2jr4xdmW5M8eOs9y172D',
+                engine="stable-diffusion-xl-1024-v1-0"
+            )
+        
+        stable_diffusion_output.save('stable_diffusion_output.png')
+        BackgroundChangeGenerator.get_concat_h_multi_resize([input_image, annotated_image, mask, stable_diffusion_output]).show()
+        BackgroundChangeGenerator.get_concat_h_multi_resize([input_image, annotated_image, mask, stable_diffusion_output]).save('./results.png')
+            
+        
 if __name__ == "__main__":
     bg_change_generator = BackgroundChangeGenerator()
-    
-    model = FastSAM('FastSAM-s.pt') 
-    print('Model Loaded !!!!!')
-    
-    input_image = None
-    annotated_image = None
-    mask = None
-    
-    parser = argparse.ArgumentParser(description="Select a file from the command line")
-    parser.add_argument("--path", type=str, help="Path to the file you want to use")
-
-    args = parser.parse_args()
-    if args.path:
-        input_image,annotated_image,mask = bg_change_generator.mask_the_region(model,args.path)
-    else:
-        input_image,annotated_image,mask = bg_change_generator.mask_the_region(model,None)
-    
-    prompt = input("Enter the prompt to change background: ")
-  
-    stable_diffusion_output = bg_change_generator.generate_background_change_api(
-                    prompt=prompt,
-                    image=input_image,
-                    mask=mask,
-                    output_path="./out.png",
-                    key='sk-y1SMimJTiCmiW7RvHnSYxZGb8zbo2jr4xdmW5M8eOs9y172D',
-                    engine="stable-diffusion-xl-1024-v1-0"
-                )
-    
-    # If you have gpu with minimum 8GB memory us this function
-    # stable_diffusion_output = bg_change_generator.generate_background_change_custom(
-    #             prompt=prompt,
-    #             image=input_image,
-    #             mask=mask,
-    #             output_path="./out.png",
-    #             key='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',
-    #             engine="stable-diffusion-xl-1024-v1-0"
-    #         )
-    
-    stable_diffusion_output.save('stable_diffusion_output.png')
-    BackgroundChangeGenerator.get_concat_h_multi_resize([input_image, annotated_image, mask ,stable_diffusion_output]).show()
-    BackgroundChangeGenerator.get_concat_h_multi_resize([input_image, annotated_image, mask , stable_diffusion_output]).save('./results.png')
-    print('Succesfullu saved the image with changed background')
+    bg_change_generator.main()
+   
